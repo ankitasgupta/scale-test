@@ -6,6 +6,11 @@
 # Fail on error
 set -e
 
+# when true, Kiali will be enabled in the basic SMCP
+KIALI_ENABLED=${KIALI_ENABLED:-"false"}
+# this is a default SMCP when creating SMCP via OCP UI console
+USE_DEFAULT_SMCP=${USE_DEFAULT_SMCP:-"false"}
+
 # Install subscriptions
 oc apply -f service-mesh-subs.yaml
 #oc apply -f service-mesh-subs-qe.yaml
@@ -35,10 +40,15 @@ do
 done
 
 VERSION=${VERSION:-"2.0"}
-if [ "$VERSION" == "2.0" ]; then
+if [ "$VERSION" == "2.0" ] || [ "$VERSION" == "2.1" ]; then
    SMCP=smcp_v2.yaml
 else
    SMCP=smcp.yaml
+fi
+
+# when asked for default, using v2 version
+if [ "$USE_DEFAULT_SMCP" == "true" ]; then
+  SMCP=smcp_v2_default.yaml
 fi
 
 while :
@@ -54,14 +64,17 @@ done;
 
 # Install control-plane
 oc new-project mesh-control-plane || true # don't fail if it exists
-while ! oc apply -f $SMCP ; do
+while ! cat $SMCP | KIALI_ENABLED=${KIALI_ENABLED} envsubst | oc apply -f - ; do
   echo "The operator pod is probably not accepting connections yet..."
   sleep 5;
 done;
 
 # Create mesh-scale namespace so we can register a member roll
 oc new-project mesh-scale || true # don't fail if it exists
-oc apply -f smmr.yaml
+while ! oc apply -f smmr.yaml; do
+  echo "Mutating webhook is probably not accepting connections yet..."
+  sleep 5;
+done;
 
 # Wait until operator creates the deployment
 while ! oc get deployment istio-ingressgateway -n mesh-control-plane 2> /dev/null; do
@@ -87,3 +100,11 @@ while ! oc get po -n mesh-control-plane -l app=prometheus --field-selector 'stat
   echo "Waiting for prometheus to boot"
   sleep 1;
 done;
+
+if [ "${KIALI_ENABLED}" == "true" ]
+then
+  while ! oc get po -n mesh-control-plane -l app=kiali --field-selector 'status.phase=Running'; do
+    echo "Waiting for kiali to boot"
+    sleep 1;
+  done;
+fi

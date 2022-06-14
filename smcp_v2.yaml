@@ -15,7 +15,7 @@ spec:
           type: Memory
           #type: Elasticsearch
     kiali:
-      enabled: false
+      enabled: ${KIALI_ENABLED}
     prometheus:
       install:
         service:
