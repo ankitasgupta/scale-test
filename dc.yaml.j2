@@ -27,7 +27,7 @@ items:
         annotations:
           sidecar.istio.io/inject: "true"
           sidecar.istio.io/statsInclusionPrefixes: listener,cluster.outbound
-          sidecar.istio.io/proxyCPU: {{ proxy_cpu }}
+          sidecar.istio.io/proxyCPU: {{ proxy_cpu | default("100m",true) }}
           sidecar.istio.io/proxyCPULimit: "1000m"
           sidecar.istio.io/concurrency: "1"
         labels:
@@ -41,9 +41,10 @@ items:
         nodeSelector:
 {% if backend_node is defined %}
           kubernetes.io/hostname: {{ backend_node }}
-{% else %}
+{% elif single_node is not defined %}
           test.role: workload
-{% endif%}
+{% endif %}
+{% if single_node is not defined %}
         topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: workload
@@ -51,20 +52,16 @@ items:
           labelSelector:
             matchLabels:
               app: scale-test
+{% endif %}
         tolerations:
         - key: workload
           operator: Exists
           effect: NoExecute
         containers:
-{% if backend_type == "java" %}
-        - image: quay.io/rvansa/mannequin:jvm-latest
-{% endif %}
-{% if backend_type == "native" %}
-        - image: quay.io/rvansa/mannequin:native
-{% endif %}
-          imagePullPolicy: Always
+        - imagePullPolicy: Always
           name: mannequin
-{% if backend_type == "java" %}
+{% if backend_type is not defined or backend_type == "java" %}
+          image: quay.io/rvansa/mannequin:jvm-latest
           command:
           - java
           - -Dquarkus.vertx.event-loops-pool-size=1
@@ -76,8 +73,8 @@ items:
           - -Dquarkus.http.ssl.certificate.key-file=/var/certs/tls.key
           - -jar
           - /deployments/app.jar
-{% endif %}
-{% if backend_type == "native" %}
+{% elif backend_type == "native" %}
+          image: quay.io/rvansa/mannequin:native
           args:
           - -Dquarkus.vertx.event-loops-pool-size=1
           - -Dquarkus.vertx.internal-blocking-pool-size=1

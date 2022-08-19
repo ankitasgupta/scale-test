@@ -10,6 +10,8 @@ set -e
 KIALI_ENABLED=${KIALI_ENABLED:-"false"}
 # this is a default SMCP when creating SMCP via OCP UI console
 USE_DEFAULT_SMCP=${USE_DEFAULT_SMCP:-"false"}
+# we want to allow empty node selector
+INGRESS_NODE_SELECTOR=${INGRESS_NODE_SELECTOR="test.role: router"}
 
 # Install subscriptions
 oc apply -f service-mesh-subs.yaml
@@ -64,7 +66,7 @@ done;
 
 # Install control-plane
 oc new-project mesh-control-plane || true # don't fail if it exists
-while ! cat $SMCP | KIALI_ENABLED=${KIALI_ENABLED} envsubst | oc apply -f - ; do
+while ! cat $SMCP | INGRESS_NODE_SELECTOR=${INGRESS_NODE_SELECTOR} KIALI_ENABLED=${KIALI_ENABLED} envsubst | oc apply -f - ; do
   echo "The operator pod is probably not accepting connections yet..."
   sleep 5;
 done;
@@ -108,3 +110,6 @@ then
     sleep 1;
   done;
 fi
+
+# On some occassions the pods get stuck in ContainersCreating when the CNI node is not restarted
+oc delete po -n openshift-operators -l k8s-app=istio-cni-node

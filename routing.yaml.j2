@@ -133,7 +133,7 @@ items:
         protocol: HTTP
       tls:
         httpsRedirect: true
-{% if policy_version == "old" %}
+{% if policy_version is defined and policy_version == "old" %}
 # Global policy requiring communication to be TLS-encrypted
 - apiVersion: authentication.istio.io/v1alpha1
   kind: Policy

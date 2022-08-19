@@ -48,7 +48,7 @@ spec:
             enabled: false
         pod:
           nodeSelector:
-            test.role: router
+            ${INGRESS_NODE_SELECTOR}
       service: {}
     openshiftRoute:
       enabled: true
