@@ -1,4 +1,5 @@
 - hosts: openshift
+  connection: local
   gather_facts: false
   tasks:
   - name: Set number of apps
@@ -83,7 +84,7 @@
       command: "oc delete route --all -n {{ namespace }}"
       failed_when: false
     - name: Expose route
-      command: "oc create route reencrypt app-{{ item }} --cert=/home/rvansa/workspace/mannequin/src/main/resources/domain.crt --key=/home/rvansa/workspace/mannequin/src/main/resources/domain.key --service=app-{{ item }} --port=8443 --hostname=app-{{ item }}.{{ wildcard_domain }}"
+      command: "oc create route reencrypt app-{{ item }} --cert=/Users/ovanders/code/self-sign-certificate/domain.crt --key=/Users/ovanders/code/self-sign-certificate/domain.key --service=app-{{ item }} --port=8443 --hostname=app-{{ item }}.{{ wildcard_domain }}"
       loop: "{{ range(1, (num_apps | int) + 1, 1) | list }}"
   - name: Generate deployment configs
     include_tasks: generate-dc.yaml

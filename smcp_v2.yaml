@@ -41,7 +41,7 @@ spec:
               cpu: "256"
               memory: 256Gi
             requests:
-              cpu: "16"
+              cpu: "0.5"
               memory: 2Gi
         deployment:
           autoScaling:
@@ -49,6 +49,9 @@ spec:
         pod:
           nodeSelector:
             test.role: router
+          tolerations:
+          - key: node-role.kubernetes.io/master
+            operator: Exists
       service: {}
     openshiftRoute:
       enabled: true
