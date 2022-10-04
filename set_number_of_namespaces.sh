@@ -35,10 +35,12 @@ function sample_stats() {
 oc whoami > /dev/null
 
 echo "Ensuring that there will be ${NUM_NS} namespaces."
+cp smmr.yaml smmr_with_added_namespaces.yaml
 
 for ((i=0;i<$NUM_NS;i++))
 do
     EXPECTED_PROJECTS+=($NS_PREFIX-${i})
+    echo "    - $NS_PREFIX-${i}" >> smmr_with_added_namespaces.yaml
 done
 
 for value in "${EXISTING_PROJECTS[@]}"
@@ -85,9 +87,15 @@ do
     oc wait --for=condition=Ready pods --all --namespace="${value}"
 done
 
+# Include the current set of namespaces in the mesh, and wait for it to catch up
+oc apply -f smmr_with_added_namespaces.yaml
+oc wait --for condition=Ready -n mesh-control-plane smcp/basic-install --timeout 1800s
+oc wait --for condition=Ready -n mesh-control-plane smmr/default --timeout 1800s
+
 if [ $MEASURE_PERIOD != "0" ]; then
     sample_stats "$NUM_NS" "$MEASURE_PERIOD"
 fi
 
-echo "done" 
+echo "done"
+rm smmr_with_added_namespaces.yaml
 exit 0
