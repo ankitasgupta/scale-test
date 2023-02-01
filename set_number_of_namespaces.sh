@@ -97,5 +97,5 @@ if [ $MEASURE_PERIOD != "0" ]; then
 fi
 
 echo "done"
-rm smmr_with_added_namespaces.yaml
+rm smmr_with_added_namespaces.yaml || true
 exit 0

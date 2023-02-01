@@ -6,8 +6,7 @@ hyperfoil_agent
 #hfc ansible_host=f20-h22-000-r620.rdu2.scalelab.redhat.com ansible_user=root
 
 [hyperfoil_agent]
-worker-0.scaletest5.lab.upshift.rdu2.redhat.com ansible_user=quicklab ansible_ssh_private_key_file=~/.ssh/quicklab.key
-
+worker-2.scaletest.lab.psi.pnq2.redhat.com ansible_user=quicklab ansible_ssh_private_key_file=~/.ssh/quicklab.key
 [hyperfoil:vars]
 hyperfoil_jfr=false
 #hyperfoil_log_config=/root/log4j2-trace-jgroups.xml
@@ -30,7 +29,7 @@ backend_type=java
 hyperfoil_distribution=/home/rvansa/workspace/Hyperfoil/distribution/target/distribution
 hyperfoil_deployer=k8s
 hyperfoil_controller_protocol=https
-hyperfoil_controller_host=hyperfoil.apps.scaletest5.lab.upshift.rdu2.redhat.com
+hyperfoil_controller_host=hyperfoil.apps.scaletest.lab.psi.pnq2.redhat.com
 hyperfoil_controller_port=443
 hyperfoil_validate_certs=false
 test_rampup_duration=120
@@ -59,7 +58,7 @@ record_envoy_stats=false
 
 namespace=mesh-scale
 control_plane=mesh-control-plane
-wildcard_domain=mesh.apps.scaletest5.lab.upshift.rdu2.redhat.com
+wildcard_domain=mesh.apps.scaletest.lab.psi.pnq2.redhat.com
 
 #namespace=istio-scale
 #control_plane=istio-system
