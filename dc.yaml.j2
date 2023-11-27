@@ -58,7 +58,16 @@ items:
           operator: Exists
           effect: NoExecute
         containers:
-        - imagePullPolicy: Always
+{% if backend_type == "java-Z" %}
+        - image: quay.io/cfilleke/mannequin:0.0-z
+{% endif %}
+{% if backend_type == "java" %}
+        - image: quay.io/cfilleke/mannequin:0.0-z
+{% endif %}
+{% if backend_type == "native" %}
+        - image: quay.io/rvansa/mannequin:native
+{% endif %}
+          imagePullPolicy: Always
           name: mannequin
 {% if backend_type is not defined or backend_type == "java" %}
           image: quay.io/rvansa/mannequin:jvm-latest

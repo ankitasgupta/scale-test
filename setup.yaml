@@ -7,7 +7,7 @@
       num_apps: "{{ (num_dc | int) / 5 }}"
   - name: Login
     when: oc_username is defined and oc_password is defined
-    command: "oc login --username={{ oc_username }} --password={{ oc_password }}"
+    command: "oc login --username={{ oc_username }} --password={{ oc_password }} --server=api.maistra-qez-49.maistra.upshift.redhat.com:6443"
   - name: Check namespace presence
     command: "oc get project {{ namespace }}"
     register: ns_exists

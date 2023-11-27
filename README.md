@@ -1,32 +1,33 @@
 # Istio/Maistra scalability tests
 
-To get this benchmark running:
+##  Prerequisites
 
-1. Install OCP and Ansible
-2. Login to OCP: `oc login -u system:admin`
-3. Install Istio: https://maistra.io/docs/getting_started/install/
+### OCP 
+### Ansible
+### Hyperfoil
+### Hyperfoil Ansible task
+
+```bash
+git clone https://github.com/Hyperfoil/hyperfoil_setup.git
+cd hyperfoil_setup
+ansible-galaxy install hyperfoil.hyperfoil_setup
+ansible-galaxy install hyperfoil.hyperfoil_shutdown
+ansible-galaxy install hyperfoil.hyperfoil_test
+```
+
+### Firewall
+
+## Setup
+
+1. Install prerequisites
+2. Run `prep_nodes.sh` to label the nodes.
+3. Login to OCP: `oc login -u system:admin`
+4. Install Istio: https://maistra.io/docs/getting_started/install/
     - In `controlplane/basic-install` set `gateways.ior_enabled: true` and `mixer.telemetry.enabled: false`
     - I suggest locating `istio-system` pods on the infra node (the same where the `default/router` resides):
       `oc patch namespace istio-system -p '{"metadata":{"annotations":{"openshift.io/node-selector":"node-role.kubernetes.io/infra=true"}}}'`
-    - I had trouble with `clusterrole istio-sidecar-injector-istio-system` - this was not correctly created and I had to fix it manually, applying:
-```
-      apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: istio-sidecar-injector-istio-system
-  labels:
-    app: istio-sidecar-injector
-    release: istio
-    istio: sidecar-injector
-rules:
-- apiGroups: [""]
-  resources: ["configmaps"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["admissionregistration.k8s.io"]
-  resources: ["mutatingwebhookconfigurations"]
-  verbs: ["get", "list", "watch", "patch", "create" ]
-```
-4. You might need to add the policies:
+
+5. You might need to add the policies:
    ```
    oc adm policy add-scc-to-user anyuid -z istio-ingress-service-account -n istio-system
    oc adm policy add-scc-to-user anyuid -z default -n istio-system
