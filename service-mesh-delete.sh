@@ -29,6 +29,7 @@ oc delete validatingwebhookconfiguration openshift-operators.servicemesh-resourc
 
 # Operator itself seems to persist
 oc delete deployment -n openshift-operators istio-operator
+oc delete daemonset -n openshift-operators istio-cni-node
 oc delete daemonset -n openshift-operators istio-node istio-cni-node
 oc delete sa -n openshift-operators istio-operator
 oc delete sa -n openshift-operators istio-cni

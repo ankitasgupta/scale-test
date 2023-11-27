@@ -35,7 +35,7 @@ do
     done
   fi
   if [ $((RETRY%12)) -eq 11 ]; then
-    oc delete csv kiali-operator.v1.36.6 -n openshift-operators
+    oc delete csv kiali-operator.v1.36.6 -n openshift-operators || true 
   fi
   sleep 5
   RETRY=$((RETRY + 1))

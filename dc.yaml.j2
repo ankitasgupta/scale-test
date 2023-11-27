@@ -48,7 +48,7 @@ items:
         topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: workload
-          whenUnsatisfiable: DoNotSchedule
+          whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
               app: scale-test

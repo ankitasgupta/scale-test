@@ -54,7 +54,7 @@ phases:
           - test:
             - httpRequest:
                 GET: /mersennePrime?p=${p}
-                authority: app-${hostIndex}.{{ wildcard_domain }}:443
+                authority: app-${hostIndex}.{{ wildcard_domain }}
                 headers:
                   x-variant:
                     fromVar: variant
@@ -75,7 +75,7 @@ phases:
           - test:
             - httpRequest:
                 GET: /proxy?p=${p}&url=http://app-${hostIndex}:8080/mersennePrime?p=${p}
-                authority: app-${hostIndex}.{{ wildcard_domain }}:443
+                authority: app-${hostIndex}.{{ wildcard_domain }}
                 headers:
                   x-variant:
                     fromVar: variant
@@ -103,7 +103,7 @@ phases:
                 max: 20
             - httpRequest:
                 GET: /db?p=${p}&host=app-${hostIndex}&size=${size}
-                authority: app-${hostIndex}.{{ wildcard_domain }}:443
+                authority: app-${hostIndex}.{{ wildcard_domain }}
                 headers:
                   x-variant:
                     fromVar: variant
