@@ -84,12 +84,12 @@
       command: "oc delete route --all -n {{ namespace }}"
       failed_when: false
     - name: Expose route
-      command: "oc create route reencrypt app-{{ item }} --cert=/home/oschaaf/self-sign-certificate/domain.crt --key=/home/oschaaf/self-sign-certificate/domain.key --service=app-{{ item }} --port=8443 --hostname=app-{{ item }}.{{ wildcard_domain }}"
+      command: "oc expose svc app-{{ item }}"
       loop: "{{ range(1, (num_apps | int) + 1, 1) | list }}"
   - name: Generate deployment configs
     include_tasks: generate-dc.yaml
   - name: Wait for pods to come up
     shell:  "{{ playbook_dir }}/wait-for-pods.sh {{ namespace }} \"{{ pod_pattern }}\" {{ num_dc }}"
-- hosts: hyperfoil_controller
-  roles:
-  - hyperfoil.hyperfoil_setup
+# - hosts: hyperfoil_controller
+#   roles:
+#   - hyperfoil.hyperfoil_setup
