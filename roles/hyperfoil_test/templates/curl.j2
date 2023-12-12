@@ -1,0 +1,1 @@
+curl -f -X POST -F "benchmark=@{{ benchmark_file }};filename={{ benchmark_file }}" {% for upload in test_files %} -F "file{{loop.index}}=@{{upload}};filename={{upload}}" {% endfor %}

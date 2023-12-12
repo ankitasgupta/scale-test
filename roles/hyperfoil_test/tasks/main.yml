@@ -1,0 +1,69 @@
+# - name: Gather information
+#   when: hyperfoil_controller_host is undefined
+#   block:
+#   - name: Validate that there's only single controller
+#     when: (groups[hyperfoil_controller_group] | length) != 1
+#     fail:
+#       msg: Only one controller is allowed.
+#   - name: Gather facts about controller
+#     when: hostvars[groups[hyperfoil_controller_group][0]]['ansible_hostname'] is undefined
+#     setup: {}
+#     delegate_to: groups[hyperfoil_controller_group][0]
+#     delegate_facts: true
+#   - name: Set hyperfoil_controller_host
+#     set_fact:
+#       hyperfoil_controller_host: "{{ hostvars[groups[hyperfoil_controller_group][0]]['ansible_hostname'] }}"
+# - name: Gather facts about agents
+#   when: hyperfoil_deployer == "" and hostvars[groups[hyperfoil_agent_group][0]]['ansible_hostname'] is undefined
+#   setup: {}
+#   delegate_to: "{{ item }}"
+#   delegate_facts: true
+#   loop: "{{ groups[hyperfoil_agent_group] }}"
+- name: Apply benchmark template
+  template:
+    src: 'benchmarks/{{ test_name }}.yaml.j2'
+    dest: '/tmp/{{ test_name }}.yaml'
+    force: yes
+- name: Define benchmark upload test file variable
+  set_fact:
+    benchmark_file: '/tmp/{{ test_name }}.yaml'
+- name: Define optional upload test files variable
+  when: test_files is undefined
+  set_fact:
+    test_files: []
+- name: log vars
+  debug:
+    msg: "Validate: >{{ hyperfoil_validate_certs }}<"
+- name: Upload benchmark template
+  shell:
+    "{{ lookup('template', 'templates/curl.j2') }} -L --post302 {{ '-k' if not (hyperfoil_validate_certs | bool) else '' }} \
+    {{ hyperfoil_controller_protocol }}://{{ hyperfoil_controller_host }}/benchmark"
+  register: curl_cmd
+  failed_when: curl_cmd.rc > 1
+- name: Start benchmark
+  uri:
+    url: "{{ hyperfoil_controller_protocol }}://{{ hyperfoil_controller_host }}/benchmark/{{ test_name }}/start{{ ('?desc=' + run_description ) if run_description is defined else '' }}"
+    status_code: "202"
+    validate_certs: "{{ hyperfoil_validate_certs | bool }}"
+  register: test_run
+- name: Set run ID
+  set_fact:
+    test_runid: "{{ test_run.location | urlsplit('path') | basename }}"
+- name: Log run ID
+  debug:
+    msg: "Benchmark URI: {{ test_run.location }} -> {{ test_runid }}"
+- name: Poll benchmark completion
+  uri:
+    url: "{{ hyperfoil_controller_protocol }}://{{ hyperfoil_controller_host }}/run/{{ test_runid }}/stats/recent"
+    validate_certs: "{{ hyperfoil_validate_certs | bool }}"
+    return_content: true
+  register: test_status
+  # Ansible 2.7 does not support include_tasks in do-until loop so we need to inline the condition
+  # See https://github.com/ansible/ansible/issues/46203 for details
+  until: test_status | from_json | json_query('terminated')
+  delay: 5
+  retries: 100000
+  ignore_errors: true
+- name: Test Status
+  debug:
+    msg: "Test Status {{ test_status }} "

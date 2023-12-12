@@ -1,0 +1,17 @@
+name: example
+agents:
+  agent-one:
+      image: quay.io/ibm-z-performance/hyperfoil:0.25
+      pod-cpu: "6500m"
+      pod-memory: "6Gi"
+http:
+  host: {{ test_domain | default("http://hyperfoil.io", true) }}
+phases:
+- example:
+    atOnce:
+      users: 1
+      scenario:
+      - test:
+        - httpRequest:
+            method: GET
+            path: /

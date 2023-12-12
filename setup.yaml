@@ -7,7 +7,7 @@
       num_apps: "{{ (num_dc | int) / 5 }}"
   - name: Login
     when: oc_username is defined and oc_password is defined
-    command: "oc login --username={{ oc_username }} --password={{ oc_password }} --server=api.ocp1.tt.testing:6443"
+    command: "oc login --username={{ oc_username }} --password={{ oc_password }} --server=api.ocp1.ocp1.tt.testing:6443"
   - name: Check namespace presence
     command: "oc get project {{ namespace }}"
     register: ns_exists

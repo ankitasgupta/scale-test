@@ -16,35 +16,36 @@ localhost
 [openshift:vars]
 proxy_cpu=200m
 backend_cpu=300m
-backend_type=java
+backend_type=java-Z
 
 [compute]
 
 [all:vars]
 oc_username=kubeadmin
 #oc_token=sha256~THE-TOKEN
-oc_password=THE-CLUSTER-PASSWORD
+oc_password=****
 hyperfoil_deployer=k8s
-hyperfoil_controller_protocol=https
+hyperfoil_controller_protocol=http
 hyperfoil_controller_host=hyperfoil-hyperfoil.apps.ocp1.tt.testing
 hyperfoil_controller_port=443
 hyperfoil_validate_certs=false
-test_rampup_duration=120
-test_steady_duration=300
+test_rampup_duration=10s
+test_steady_duration=10s
 test_name=closedmodel
 #test_name=shardedwrk
 fork=all
 http2="true"
+agent=agent-one
 
 # For open-model
-test_users_per_sec=4500
-test_inc_users_per_sec=1500
+test_users_per_sec=10
+test_inc_users_per_sec=5
 # For closed-model
 #test_concurrent_users=12000
 #test_shared_connections=5376
 #test_shared_connections=60000
-test_concurrent_users=6000
-test_shared_connections=6000
+test_concurrent_users=10
+test_shared_connections=10
 
 pods_per_dc=1
 num_dc=5
@@ -55,11 +56,11 @@ record_envoy_stats=false
 #wildcard_domain=plain.apps.test.ocp1.tt.testing
 
 namespace=mesh-scale
-control_plane=mesh-control-plane
+#control_plane=mesh-control-plane
 wildcard_domain=mesh.apps.test.ocp1.tt.testing
 
 #namespace=istio-scale
-#control_plane=istio-system
+control_plane=istio-system
 #wildcard_domain=istio.apps.test.ocp1.tt.testing
 
 policy_version=new

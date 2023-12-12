@@ -54,12 +54,12 @@
     when: "(max_pods | int) - (min_pods | int) > 1"
     fail:
       msg: "Unbalanced pods: min = {{ min_pods }}, max = {{ max_pods }} "
-  - name: Make sure all services are reachable
-    shell: "{{ playbook_dir }}/check-services.sh {{ wildcard_domain }} {{ num_apps }}"
-    register: services_result
-    until: services_result.rc == 0
-    retries: 10
-    delay: 10
+#  - name: Make sure all services are reachable
+#   shell: "{{ playbook_dir }}/check-services.sh {{ wildcard_domain }} {{ num_apps }}"
+#   register: services_result
+#   until: services_result.rc == 0
+#   retries: 10
+#   delay: 10
   - when: target == 'routers'
     block:
     - name: Find routers
@@ -126,7 +126,7 @@
       jid: "{{ item.ansible_job_id }}"
   - name: Start test
     include_role:
-      name: hyperfoil.hyperfoil_test
+      name: hyperfoil_test
     when: hyperfoil_deployer == "k8s"
     vars:
 #      run_description: "{{ namespace }}%20R%3D{{ num_routers }}%20G%3D{{ num_gateways }}%20P%3D{{ total_pods }}%20VS%3D{{ virtualservices.stdout }}"
@@ -141,4 +141,4 @@
     debug:
       msg: "Run ID was {{ test_runid }}"
   - name: Fetch Hyperfoil stats
-    shell: "curl -s -k {{ hyperfoil_controller_protocol }}://{{ hyperfoil_controller_host }}:{{ hyperfoil_controller_port}}/run/{{ test_runid }}/stats/all -H 'accept: application/json' > /tmp/hf_{{ test_runid }}_r{{ num_routers }}_g{{ num_gateways }}_d{{ num_dc }}.json"
+    shell: "curl -s -k {{ hyperfoil_controller_protocol }}://{{ hyperfoil_controller_host }}/run/{{ test_runid }}/stats/all -H 'accept: application/json' > /tmp/hf_{{ test_runid }}_r{{ num_routers }}_g{{ num_gateways }}_d{{ num_dc }}.json"

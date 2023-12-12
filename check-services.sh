@@ -3,10 +3,10 @@
 DOMAIN=$1
 NUM_APPS=$2
 
-REPLICAS=$(oc get deployment -n mesh-control-plane istio-ingressgateway -o json | jq -r .spec.replicas)
+REPLICAS=$(oc get deployment -n istio-system istio-ingressgateway -o json | jq -r .spec.replicas)
 echo "Waiting for all gateways to come up"
 while true; do
-    RUNNING=$(oc get po -n mesh-control-plane -l app=istio-ingressgateway --field-selector 'status.phase=Running' --no-headers | wc -l)
+    RUNNING=$(oc get po -n istio-system -l app=istio-ingressgateway --field-selector 'status.phase=Running' --no-headers | wc -l)
     if [ $RUNNING -eq $REPLICAS ]; then break; fi
     sleep 1;
 done
@@ -28,5 +28,4 @@ if [ $STATUS = "ok" ]; then
 fi
 
 echo "Deleting ingress gateway"
-oc delete po -n mesh-control-plane -l app=istio-ingressgateway
 exit 1;
