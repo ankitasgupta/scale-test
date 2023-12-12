@@ -117,9 +117,9 @@
     when: use_istio
     shell: "oc get po -n {{ control_plane }} -l istio=ingressgateway -o name --no-headers | cut -f 2 -d '/'"
     register: gateway_pods
-  - name: Create additional namespaces
-    shell: "./set_number_of_namespaces.sh {{ num_namespaces }} 0"
-    register: create_namespaces
+  # - name: Create additional namespaces
+  #   shell: "./set_number_of_namespaces.sh {{ num_namespaces }} 0"
+  #   register: create_namespaces
   - name: Get workload pod names
     shell: "oc get po -n {{ namespace }} -l app=scale-test -o name --no-headers | cut -f 2 -d '/'"
     register: workload_pods
@@ -141,7 +141,8 @@
     when: hyperfoil_deployer == "k8s"
     vars:
 #      run_description: "{{ namespace }}%20R%3D{{ num_routers }}%20G%3D{{ num_gateways }}%20P%3D{{ total_pods }}%20VS%3D{{ virtualservices.stdout }}"
-      run_description: "sm2.1%20G%3D{{ num_gateways }}%20P%3D{{ total_pods }}%20N%3D{{ num_namespaces }}%20{{ fork }}%20{{ (http2 == 'true') | ternary('http2', 'http1.1') }}"
+#      run_description: "sm2.1%20G%3D{{ num_gateways }}%20P%3D{{ total_pods }}%20N%3D{{ num_namespaces }}%20{{ fork }}%20{{ (http2 == 'true') | ternary('http2', 'http1.1') }}"
+      run_description: "sm2.1%20G%3D{{ num_gateways }}%20P%3D{{ total_pods }}%20{{ fork }}%20{{ (http2 == 'true') | ternary('http2', 'http1.1') }}"
   - name: Capture info after test
     when: use_istio and record_envoy_stats
     include_tasks: capture-envoy-info.yaml
@@ -151,4 +152,4 @@
     debug:
       msg: "Run ID was {{ test_runid }}"
   - name: Fetch Hyperfoil stats
-    shell: "curl -s -k {{ hyperfoil_controller_protocol }}://{{ hyperfoil_controller_host }}:{{ hyperfoil_controller_port}}/run/{{ test_runid }}/stats/all -H 'accept: application/json' > /tmp/hf_{{ test_runid }}_r{{ num_routers }}_g{{ num_gateways }}_n{{ num_namespaces }}_d{{ num_dc }}.json"
+    shell: "curl -s -k {{ hyperfoil_controller_protocol }}://{{ hyperfoil_controller_host }}:{{ hyperfoil_controller_port}}/run/{{ test_runid }}/stats/all -H 'accept: application/json' > /tmp/hf_{{ test_runid }}_r{{ num_routers }}_g{{ num_gateways }}_d{{ num_dc }}.json"

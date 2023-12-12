@@ -4,14 +4,15 @@ agents:
     extras: -XX:+UseShenandoahGC
     # -XX:StartFlightRecording=delay=30s,duration=150s,disk=true,filename=/tmp/recording.jfr,settings=profile
     #stop: false
-{% for agent in groups[hyperfoil_agent_group] %}
 {%   if hyperfoil_deployer == "k8s" %}
   {{ agent }}:
-    node: {{ agent }}
+    image: quay.io/ibm-z-performance/hyperfoil:0.25
+    pod-cpu: "2000m"
+    pod-memory: "2Gi"
+
 {%   else %}
   {{ agent }}: {{ hostvars[agent]['ansible_host'] }}:{{ hyperfoil_agent_port }}
 {%   endif %}
-{% endfor %}
 threads: 50
 http:
 {% for index in range(1, (num_apps | int) + 1) %}
