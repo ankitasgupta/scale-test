@@ -1,16 +1,5 @@
-# Gather facts
-- hosts: hyperfoil
-  ignore_unreachable: true
-  tasks: []
-- hosts: hyperfoil_controller
-  tasks:
-  - name: Start test
-    include_role:
-      name: hyperfoil.hyperfoil_test
-    when: hyperfoil_deployer == "ssh"
-    vars:
-      test_name: test
 - hosts: openshift
+  connection: local
   tasks:
   - set_fact:
       http2: "{{ http2 | default('true', true) }}"
