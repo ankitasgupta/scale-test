@@ -60,10 +60,6 @@
   register: test_status
   # Ansible 2.7 does not support include_tasks in do-until loop so we need to inline the condition
   # See https://github.com/ansible/ansible/issues/46203 for details
-  until: test_status | from_json | json_query('terminated')
+  until: test_status.json.status == "TERMINATED"
   delay: 5
   retries: 100000
-  ignore_errors: true
-- name: Test Status
-  debug:
-    msg: "Test Status {{ test_status }} "

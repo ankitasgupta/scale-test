@@ -141,4 +141,4 @@
     debug:
       msg: "Run ID was {{ test_runid }}"
   - name: Fetch Hyperfoil stats
-    shell: "curl -s -k {{ hyperfoil_controller_protocol }}://{{ hyperfoil_controller_host }}/run/{{ test_runid }}/stats/all -H 'accept: application/json' > /tmp/hf_{{ test_runid }}_r{{ num_routers }}_g{{ num_gateways }}_d{{ num_dc }}.json"
+    shell: "curl -s -k -L {{ hyperfoil_controller_protocol }}://{{ hyperfoil_controller_host }}/run/{{ test_runid }}/stats/all -H 'accept: application/json' > /tmp/hf_{{ test_runid }}_r{{ num_routers }}_g{{ num_gateways }}_d{{ num_dc }}.json"
