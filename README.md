@@ -17,7 +17,7 @@ https://github.ibm.com/Openshift-Addons-Performance/Openshift-performance-Docs-I
 3. Login to OCP: `oc login -u system:admin`
 
 ## Test with OSSM
-    1. Install Istio: https://maistra.io/docs/getting_started/install/
+    1. Install OSSM
         - In `controlplane/basic-install` set `gateways.ior_enabled: true` and `mixer.telemetry.enabled: false`
         - I suggest locating `istio-system` pods on the infra node (the same where the `default/router` resides):
           `oc patch namespace istio-system -p '{"metadata":{"annotations":{"openshift.io/node-selector":"node-role.kubernetes.io/infra=true"}}}'`
