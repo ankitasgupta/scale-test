@@ -15,7 +15,7 @@ https://github.ibm.com/Openshift-Addons-Performance/Openshift-performance-Docs-I
 1. Install prerequisites
 2. Run `prep_nodes.sh` to label the nodes.
 3. Login to OCP: `oc login -u system:admin`
-4. Install Hyperfoil
+
 ## Test with OSSM
     1. Install Istio: https://maistra.io/docs/getting_started/install/
         - In `controlplane/basic-install` set `gateways.ior_enabled: true` and `mixer.telemetry.enabled: false`
