@@ -2,9 +2,9 @@
 
 ##  Prerequisites
 
-### OCP 
-### Ansible
-### Hyperfoil
+### 1. OCP 
+### 2. Ansible
+### 3. Hyperfoil
 
 https://github.ibm.com/Openshift-Addons-Performance/Openshift-performance-Docs-IBM-Z
 
