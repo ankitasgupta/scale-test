@@ -8,7 +8,7 @@
 
 https://github.ibm.com/Openshift-Addons-Performance/Openshift-performance-Docs-IBM-Z
 
-### Firewall
+### 4. Firewall
 
 ## Setup
 
