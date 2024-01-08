@@ -1,0 +1,73 @@
+name: closedmodel-withoutossm
+agents:
+{%   if hyperfoil_deployer == "k8s" %}
+  {{ agent }}:
+    image: quay.io/ibm-z-performance/hyperfoil:0.25
+    pod-cpu: "4000m"
+    pod-memory: "4Gi"
+{%   else %}
+  {{ agent }}: {{ hostvars[agent]['ansible_host'] }}:{{ hyperfoil_agent_port }}
+{%   endif %}
+threads: 50
+http:
+{% for index in range(1, (num_apps | int) + 1) %}
+- host: https://app-{{ index }}.{{ wildcard_domain }}
+  allowHttp2: {{ http2 }}
+  sharedConnections: {{ (test_shared_connections | default(100, true)) // (num_apps | int) }}
+{% endfor %}
+phases:
+- warmup:
+    always:
+      isWarmup: true
+      users: {{ test_concurrent_users }}
+      duration: {{ test_rampup_duration }}
+      forks:
+        simple: &simple
+          weight: {{ (fork == "simple" or fork == "all") | ternary(1, 0) }}
+          scenario:
+          - params: &params
+            - set: p <- 1
+            - randomInt:
+                toVar: hostIndex
+                min: 1
+                max: {{ num_apps }}
+          - test:
+            - httpRequest:
+                GET: /mersennePrime?p=${p}
+                authority: app-${hostIndex}.{{ wildcard_domain }}
+                sla:
+                  errorRatio: 0.1
+        proxy: &proxy
+          weight: {{ (fork == "proxy" or fork == "all") | ternary(1, 0) }}
+          scenario:
+          - params: *params
+          - test:
+            - httpRequest:
+                GET: /proxy?p=${p}&url=http://app-${hostIndex}:8080/mersennePrime?p=${p}
+                authority: app-${hostIndex}.{{ wildcard_domain }}
+                sla:
+                  errorRatio: 0.1
+        db: &db
+          weight: {{ (fork == "db" or fork == "all") | ternary(1, 0) }}
+          scenario:
+          - params: *params
+          - test:
+            - randomInt:
+                toVar: size
+                min: 5
+                max: 20
+            - httpRequest:
+                GET: /db?p=${p}&host=app-${hostIndex}&size=${size}
+                authority: app-${hostIndex}.{{ wildcard_domain }}
+                sla:
+                  errorRatio: 0.1
+- steady:
+    always:
+      users: {{ test_concurrent_users }}
+      duration: {{ test_steady_duration }}
+      startAfter: warmup
+      forks:
+        simple: *simple
+        proxy: *proxy
+        db: *db
+

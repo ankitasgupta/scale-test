@@ -15,13 +15,13 @@
     loop: "{{ workload_cmd.stdout.split() }}"
     shell: "oc get pod -n {{ namespace }} --field-selector=spec.nodeName={{item}},status.phase=Running -o json | jq '.items | length'"
     register: workload_counts
-  - name: Calculate pod count difference
-    set_fact:
-      min_pods: "{{ workload_counts.results | map(attribute='stdout') | list | min }}"
-      max_pods: "{{ workload_counts.results | map(attribute='stdout') | list | max }}"
-      total_pods: "{{ workload_counts.results | map(attribute='stdout') | list | map('int') | sum }}"
-      record_envoy_stats: "{{ record_envoy_stats | default('false', true) | bool }}"
-      use_istio: "{{ use_istio | default('true', true) | bool }}"
+#  - name: Calculate pod count difference
+ #   set_fact:
+  #    min_pods: "{{ workload_counts.results | map(attribute='stdout') | list | min }}"
+   #   max_pods: "{{ workload_counts.results | map(attribute='stdout') | list | max }}"
+    #  total_pods: "{{ workload_counts.results | map(attribute='stdout') | list | map('int') | sum }}"
+     # record_envoy_stats: "{{ record_envoy_stats | default('false', true) | bool }}"
+      #use_istio: "{{ use_istio | default('true', true) | bool }}"
   - when: single_node is not defined
     block:
     - name: Find workload nodes
@@ -55,11 +55,11 @@
     fail:
       msg: "Unbalanced pods: min = {{ min_pods }}, max = {{ max_pods }} "
 #  - name: Make sure all services are reachable
-#   shell: "{{ playbook_dir }}/check-services.sh {{ wildcard_domain }} {{ num_apps }}"
-#   register: services_result
-#   until: services_result.rc == 0
-#   retries: 10
-#   delay: 10
+#    shell: "{{ playbook_dir }}/check-services.sh {{ wildcard_domain }} {{ num_apps }}"
+#    register: services_result
+#    until: services_result.rc == 0
+#    retries: 10
+#    delay: 10
   - when: target == 'routers'
     block:
     - name: Find routers
@@ -120,7 +120,7 @@
     poll: 0
     register: stats_reset
   - name: Wait for the info
-    when: use_istio and record_envoy_stats
+    when: use_istio and record_envoy_stats | bool
     loop: "{{ stats_reset.results }}"
     async_status:
       jid: "{{ item.ansible_job_id }}"
@@ -133,7 +133,7 @@
 #      run_description: "sm2.1%20G%3D{{ num_gateways }}%20P%3D{{ total_pods }}%20N%3D{{ num_namespaces }}%20{{ fork }}%20{{ (http2 == 'true') | ternary('http2', 'http1.1') }}"
       run_description: "sm2.1%20G%3D{{ num_gateways }}%20P%3D{{ total_pods }}%20{{ fork }}%20{{ (http2 == 'true') | ternary('http2', 'http1.1') }}"
   - name: Capture info after test
-    when: use_istio and record_envoy_stats
+    when: use_istio and record_envoy_stats | bool
     include_tasks: capture-envoy-info.yaml
     vars:
       dest: "/tmp/envoy_{{test_runid}}_r{{ num_routers }}_g{{ num_gateways }}_d{{ num_dc }}.zip"
