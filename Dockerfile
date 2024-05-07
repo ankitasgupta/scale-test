@@ -8,7 +8,7 @@
 #
 # Then, build the image with:
 #
-# podman build -f src/main/docker/Dockerfile.jvmZ -t quay.io/<username>/mannequin:0.0-z .
+# podman build -f Dockerfile.Z -t quay.io/<username>/mannequin:0.0-z .
 #
 # Then run the container using:
 #
@@ -18,10 +18,11 @@
 # so that you can pull it into a pod deployment on OpenShift
 #
 ###
-FROM registry.access.redhat.com/ubi8/ubi:latest
-RUN dnf -y update && dnf -y install java-1.8.0-openjdk-devel
+FROM registry.access.redhat.com/ubi9/ubi:latest
+RUN yum install -y java-11-openjdk.s390x
 ENV JAVA_OPTIONS=-Dquarkus.http.host=0.0.0.0
 COPY target/lib/* /deployments/lib/
 COPY target/*-runner.jar /deployments/app.jar
 COPY ./java-runner.sh /deployments/java-runner.sh
+RUN chmod a+x /deployments/java-runner.sh
 ENTRYPOINT [ "/deployments/java-runner.sh" ]
