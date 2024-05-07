@@ -1,10 +1,10 @@
-name: closedmodel
+name: closedmodel-withoutossm
 agents:
 {%   if hyperfoil_deployer == "k8s" %}
   {{ agent }}:
     image: quay.io/ibm-z-performance/hyperfoil:0.25
-    pod-cpu: "2000m"
-    pod-memory: "2Gi"
+    pod-cpu: "4000m"
+    pod-memory: "4Gi"
 {%   else %}
   {{ agent }}: {{ hostvars[agent]['ansible_host'] }}:{{ hyperfoil_agent_port }}
 {%   endif %}
@@ -13,12 +13,6 @@ http:
 {% for index in range(1, (num_apps | int) + 1) %}
 - host: https://app-{{ index }}.{{ wildcard_domain }}
   allowHttp2: {{ http2 }}
-{% if (endpoints | length) > 0 %}
-  addresses:
-{%   for endpoint in endpoints %}
-  - {{ endpoint }}:{{ endpoint_port }}
-{%   endfor %}
-{% endif %}
   sharedConnections: {{ (test_shared_connections | default(100, true)) // (num_apps | int) }}
 {% endfor %}
 phases:
@@ -32,38 +26,17 @@ phases:
           weight: {{ (fork == "simple" or fork == "all") | ternary(1, 0) }}
           scenario:
           - params: &params
-            # - randomInt:
-            #     toVar: p
-            #     min: 200
-            #     max: 300
             - set: p <- 1
             - randomInt:
                 toVar: hostIndex
                 min: 1
                 max: {{ num_apps }}
-            - randomItem:
-                list:
-                  stable: 0.8
-                  canary: 0.2
-                  #mirror: 0.1
-                toVar: variant
           - test:
             - httpRequest:
                 GET: /mersennePrime?p=${p}
                 authority: app-${hostIndex}.{{ wildcard_domain }}
-                headers:
-                  x-variant:
-                    fromVar: variant
                 sla:
                   errorRatio: 0.1
-                #metric:
-                # - ([^.]*)\..* -> $1
-                # handler:
-                #   header:
-                #   - recordHeaderTime:
-                #       header: x-envoy-upstream-service-time
-                #       metric: simple-upstream
-                #       unit: ms
         proxy: &proxy
           weight: {{ (fork == "proxy" or fork == "all") | ternary(1, 0) }}
           scenario:
@@ -72,22 +45,8 @@ phases:
             - httpRequest:
                 GET: /proxy?p=${p}&url=http://app-${hostIndex}:8080/mersennePrime?p=${p}
                 authority: app-${hostIndex}.{{ wildcard_domain }}
-                headers:
-                  x-variant:
-                    fromVar: variant
                 sla:
                   errorRatio: 0.1
-                #metric:
-                #- ([^.]*)\..* -> $1
-                # handler:
-                #   header:
-                #   - recordHeaderTime:
-                #       header: x-envoy-upstream-service-time
-                #       metric: proxy-upstream
-                #       unit: ms
-                #   - recordHeaderTime:
-                #       header: x-proxy-service-time
-                #       metric: proxy-downstream
         db: &db
           weight: {{ (fork == "db" or fork == "all") | ternary(1, 0) }}
           scenario:
@@ -100,22 +59,8 @@ phases:
             - httpRequest:
                 GET: /db?p=${p}&host=app-${hostIndex}&size=${size}
                 authority: app-${hostIndex}.{{ wildcard_domain }}
-                headers:
-                  x-variant:
-                    fromVar: variant
                 sla:
                   errorRatio: 0.1
-                #metric:
-                #- ([^.]*)\..* -> $1
-                # handler:
-                #   header:
-                #   - recordHeaderTime:
-                #       header: x-envoy-upstream-service-time
-                #       metric: db-upstream
-                #       unit: ms
-                #   - recordHeaderTime:
-                #       header: x-db-service-time
-                #       metric: db-downstream
 - steady:
     always:
       users: {{ test_concurrent_users }}
@@ -125,3 +70,4 @@ phases:
         simple: *simple
         proxy: *proxy
         db: *db
+

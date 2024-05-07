@@ -1,11 +1,11 @@
 - name: Pick temp file
   tempfile:
-    prefix: dc-
+    prefix: deployment-
     suffix: .yaml
   register: resources
 - name: Generate deployment configs
   template:
-    src: dc.yaml.j2
+    src: deployment.yaml.j2
     dest: "{{ resources.path }}"
 - name: Apply resources
   command: "oc apply -f {{ resources.path }}"

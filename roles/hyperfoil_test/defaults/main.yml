@@ -1,0 +1,8 @@
+hyperfoil_agent_group: hyperfoil_agent
+hyperfoil_agent_port: 22
+hyperfoil_controller_group: hyperfoil_controller
+hyperfoil_controller_port: 8090
+hyperfoil_controller_protocol: http
+hyperfoil_deployer: k8s
+hyperfoil_validate_certs: false
+

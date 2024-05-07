@@ -1,12 +1,13 @@
 - hosts: openshift
+  connection: local
   gather_facts: false
   tasks:
   - name: Set number of apps
     set_fact:
       num_apps: "{{ (num_dc | int) / 5 }}"
-  - name: Login
-    when: oc_username is defined and oc_password is defined
-    command: "oc login --username={{ oc_username }} --password={{ oc_password }}"
+  #- name: Login
+  #  when: oc_username is defined and oc_password is defined
+  #  command: "oc login --username={{ oc_username }} --password={{ oc_password }} --server=api.ocp1.a3elp50.lnxero1.boe:6443"
   - name: Check namespace presence
     command: "oc get project {{ namespace }}"
     register: ns_exists
@@ -82,13 +83,24 @@
     - name: Drop existing routes
       command: "oc delete route --all -n {{ namespace }}"
       failed_when: false
-    - name: Expose route
-      command: "oc create route reencrypt app-{{ item }} --cert=/home/rvansa/workspace/mannequin/src/main/resources/domain.crt --key=/home/rvansa/workspace/mannequin/src/main/resources/domain.key --service=app-{{ item }} --port=8443 --hostname=app-{{ item }}.{{ wildcard_domain }}"
-      loop: "{{ range(1, (num_apps | int) + 1, 1) | list }}"
+    - name: Get temporary route files
+      tempfile:
+        prefix: oc-routes-
+        suffix: .yaml
+      register: ocroutes
+    - name: Generate route CRs
+      template:
+        src: oc-routes.yaml.j2
+        dest: "{{ ocroutes.path }}"
+    - name: Apply routes
+      command: "oc apply -f {{ ocroutes.path }}"
+    #- name: Expose route
+    #  command: "oc expose svc app-{{ item }}"
+    #  loop: "{{ range(1, (num_apps | int) + 1, 1) | list }}"
   - name: Generate deployment configs
     include_tasks: generate-dc.yaml
   - name: Wait for pods to come up
     shell:  "{{ playbook_dir }}/wait-for-pods.sh {{ namespace }} \"{{ pod_pattern }}\" {{ num_dc }}"
-- hosts: hyperfoil_controller
-  roles:
-  - hyperfoil.hyperfoil_setup
+# - hosts: hyperfoil_controller
+#   roles:
+#   - hyperfoil.hyperfoil_setup
