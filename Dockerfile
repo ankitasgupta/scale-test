@@ -2,6 +2,9 @@
 # This Dockerfile is used in order to build a container that runs a 
 # Quarkus application in JVM mode on s390x architecture (IBM System Z)
 #
+# Clone https://github.com/RedHatPerf/mannequin
+# Copy Dockerfile as Dockerfile.Z to the root location in mannequin repo
+# Copy java-runner.sh to the root location in mannequin repo
 # Before building the docker image run:
 #
 # mvn package
